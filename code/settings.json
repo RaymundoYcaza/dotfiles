@@ -1,0 +1,156 @@
+{
+  // ** Inicio de personalizaciones de Raymundo ** 2025-12-21 16:58:33
+  // ===== OPTIMIZAR TYPESCRIPT =====
+  "typescript.tsserver.maxTsServerMemory": 1024,
+  "python.analysis.typeCheckingMode": "off",
+  "python.linting.enabled": false,
+  "python.analysis.extraPaths": [],
+  "[python]": {
+    "editor.formatOnSave": false,
+    "editor.formatOnType": false
+  },
+  "git.autorefresh": false,
+  "git.autofetch": false,
+  "files.autoSave": "onFocusChange",
+  "search.exclude": {
+    "node_modules": true,
+    "dist": true,
+    "venv": true,
+    "__pycache__": true
+  },
+    // ===== EXCLUSIONES DE FILE WATCHING =====
+  "files.watcherExclude": {
+    ".git/objects": true,
+    ".git/subtree-cache": true,
+    "node_modules/*": true,
+    "dist": true,
+    "build": true,
+    ".vscode": true,
+    "coverage": true,
+    "__generated__": true
+  },
+
+  // ===== LIMPIAR SIDEBAR EXPLORADOR =====
+  "files.exclude": {
+    ".git": true,
+    ".DS_Store": true,
+    "node_modules": true,
+    "dist": true,
+    "build": true
+  },
+
+  // ===== OPTIMIZAR BÚSQUEDAS =====
+  "search.exclude": {
+    "node_modules": true,
+    "dist": true,
+    "build": true,
+    "coverage": true
+  },
+
+  // ===== TYPESCRIPT LIGERO =====
+  "typescript.tsserver.log": "off",
+  "typescript.disableAutomaticTypeAcquisition": true,
+  "typescript.tsserver.experimental.enableProjectDiagnostics": false,
+
+  // ===== UI MINIMALISTA =====
+  "editor.minimap.enabled": false,
+  "breadcrumbs.enabled": true,
+  "editor.codeLens": false,
+  "workbench.activityBar.visible": false,
+  "window.menuBarVisibility": "toggle",
+
+  // ===== AUTO-SAVE Y FORMATTING EFICIENTE =====
+  "files.autoSave": "onFocusChange",
+  "editor.formatOnSave": true,
+  "editor.formatOnType": false,
+  "editor.formatOnPaste": false,
+
+  // ===== GIT EFICIENTE =====
+  "git.autorefresh": false,
+  "git.autofetch": false,
+  "git.decorations.enabled": false,
+
+  // ===== ARCHIVOS GRANDES =====
+  "files.maxMemoryForLargeFilesMB": 4096,
+  // ** Fin de personalizaciones de Raymundo ** 2025-12-21 16:58:33
+
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "editor.fontFamily": "'Cascadia Code', Consolas, 'Courier New', monospace",
+  "editor.fontSize": 16,
+  "editor.mouseWheelZoom": true,
+  "multiclip.formatAfterPaste": true,
+  "[dart]": {
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "editor.rulers": [80],
+    "editor.selectionHighlight": false,
+    "editor.suggestSelection": "first",
+    "editor.tabCompletion": "onlySnippets",
+    "editor.wordBasedSuggestions": "off"
+  },
+  "markdown.copyFiles.destination": {
+    "**/*": "images/"
+  },
+  "window.zoomLevel": 1,
+  "[scss]": {
+    "editor.defaultFormatter": "vscode.css-language-features",
+    "editor.suggest.insertMode": "replace"
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.sortImports": "explicit"
+  },
+  "editor.formatOnSave": true,
+  "remote.SSH.remotePlatform": {
+    "192.168.0.81": "linux",
+    "142.93.200.128": "linux",
+    "192.168.100.81": "linux",
+    "100.77.170.125": "linux",
+    "maximax-local": "linux"
+  },
+  "dev.containers.executeInWSL": true,
+  "emulator.emulatorPath": "~\\Android\\Sdk\\emulator",
+  "emulator.emulatorPathWindows": "C:\\Users\\raymundo\\AppData\\Local\\Android\\Sdk\\emulator",
+  "workbench.iconTheme": "vscode-icons",
+  "editor.linkedEditing": true,
+  "editor.fontLigatures": true,
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "explorer.confirmDelete": false,
+  "git.enableSmartCommit": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[php]": {
+    "editor.defaultFormatter": "bmewburn.vscode-intelephense-client"
+  },
+  "workbench.colorTheme": "Andromeda Bordered",
+  "security.workspace.trust.untrustedFiles": "open",
+  "security.allowedUNCHosts": [
+    "192.168.0.16",
+    "Inorizonti"
+  ],
+  "remote.localPortHost": "allInterfaces",
+  "svelte.enable-ts-plugin": true,
+  "extensions.ignoreRecommendations": true,
+  "github.copilot.nextEditSuggestions.enabled": true,
+  "workbench.editor.empty.hint": "hidden",
+  "amazonQ.suppressPrompts": {
+    "amazonQChatDisclaimer": true,
+    "amazonQChatPairProgramming": true
+  },
+  "kilo-code.allowedCommands": [
+    "git log",
+    "git diff",
+    "git show"
+  ],
+  "kilo-code.deniedCommands": [],
+  "editor.accessibilitySupport": "off"
+}
