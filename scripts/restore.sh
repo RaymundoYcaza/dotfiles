@@ -171,8 +171,8 @@ restore_network_config() {
     fi
 
     if confirm "¿Configurar IP estática del servidor?"; then
-        log_info "Ejecutando network-setup.sh..."
-        if bash "${DOTFILES_DIR}/scripts/network-setup.sh"; then
+        log_info "Ejecutando network-setup.sh (requiere sudo)..."
+        if sudo bash "${DOTFILES_DIR}/scripts/network-setup.sh"; then
             log_ok "Red configurada exitosamente."
         else
             log_warn "Error al configurar red. Podés hacerlo manualmente después:"
