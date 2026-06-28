@@ -1,0 +1,32 @@
+# 20-ethernet.network — Configuración de red estática
+# ===================================================
+# Este archivo es un TEMPLATE. La IP se reemplaza automáticamente
+# por scripts/network-setup.sh usando el valor de STATIC_IP.
+#
+# Para cambiar la IP manualmente:
+#   1. Editar STATIC_IP en scripts/network-setup.sh
+#   2. Ejecutar: sudo ./scripts/network-setup.sh
+#
+# O simplemente editar este archivo directamente y reiniciar:
+#   sudo systemctl restart systemd-networkd
+
+[Match]
+Name=en*
+Name=eth*
+
+[Link]
+RequiredForOnline=routable
+
+[Network]
+# IP ESTÁTICA — reemplazada por network-setup.sh
+Address=__STATIC_IP__/24
+Gateway=192.168.100.1
+DNS=9.9.9.9
+DNS=2620:fe::9
+MulticastDNS=yes
+
+[DHCPv4]
+RouteMetric=100
+
+[IPv6AcceptRA]
+RouteMetric=100

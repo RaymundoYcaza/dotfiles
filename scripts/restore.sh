@@ -162,6 +162,26 @@ restore_etc_backup() {
     fi
 }
 
+restore_network_config() {
+    log_info "=== Configuración de red estática ==="
+
+    if [ ! -f "${DOTFILES_DIR}/scripts/network-setup.sh" ]; then
+        log_warn "No se encontró scripts/network-setup.sh. Omitiendo configuración de red."
+        return
+    fi
+
+    if confirm "¿Configurar IP estática del servidor?"; then
+        log_info "Ejecutando network-setup.sh..."
+        bash "${DOTFILES_DIR}/scripts/network-setup.sh" || \
+            log_warn "Error al configurar red. Podés hacerlo manualmente después:"
+            log_info "  STATIC_IP=192.168.100.X ${DOTFILES_DIR}/scripts/network-setup.sh"
+    else
+        log_info "Omitiendo configuración de red. La IP se asignará por DHCP."
+        log_info "Para configurar después:"
+        log_info "  cd ~/.dotfiles && bash scripts/network-setup.sh"
+    fi
+}
+
 install_gentleman_dots() {
     log_info "=== Gentleman.Dots ==="
 
@@ -199,11 +219,13 @@ final_instructions() {
     echo "   │ 1. 🔑 Verificar claves SSH/GPG              │"
     echo "   │ 2. 💾 Verificar montaje disco externo       │"
     echo "   │    → /mnt/disc-a00/                         │"
-    echo "   │ 3. 🐳 Configurar Dokploy y contenedores     │"
-    echo "   │ 4. 📦 Revisar packages restantes:           │"
+    echo "   │ 3. 🌐 Verificar IP estática:                │"
+    echo "   │    ip addr show                             │"
+    echo "   │ 4. 🐳 Configurar Dokploy y contenedores     │"
+    echo "   │ 5. 📦 Revisar packages restantes:           │"
     echo "   │    cat ~/.dotfiles/packages/*.txt           │"
-    echo "   │ 5. 🔄 git pull (últimos cambios)            │"
-    echo "   │ 6. 🚀 Disfrutar tu sistema                  │"
+    echo "   │ 6. 🔄 git pull (últimos cambios)            │"
+    echo "   │ 7. 🚀 Disfrutar tu sistema                  │"
     echo "   └─────────────────────────────────────────────┘"
 }
 
@@ -237,8 +259,9 @@ main() {
         echo "  2. Restaurar paquetes desde packages/*.txt"
         echo "  3. Restaurar dotfiles vía Stow"
         echo "  4. Restaurar /etc desde backup externo"
-        echo "  5. Instalar Gentleman.Dots (opcional)"
-        echo "  6. Reaplicar tema Omarchy"
+        echo "  5. Configurar IP estática"
+        echo "  6. Instalar Gentleman.Dots (opcional)"
+        echo "  7. Reaplicar tema Omarchy"
         exit 0
     fi
 
@@ -246,6 +269,7 @@ main() {
     restore_packages
     restore_dotfiles_stow
     restore_etc_backup
+    restore_network_config
     install_gentleman_dots
     restore_omarchy_theme
     final_instructions

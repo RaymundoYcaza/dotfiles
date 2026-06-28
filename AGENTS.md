@@ -39,6 +39,7 @@ Este es un sistema **Omarchy** (distro Arch Linux preconfigurada con Hyprland, W
 | **git** | **Stow** | ✅ `stow_packages/git/` | Git + disco |
 | **lazygit** | **Stow** | ✅ `stow_packages/lazygit/` | Git + disco |
 | **starship** | **Stow** | ✅ `stow_packages/starship/` | Git + disco |
+| **Red estática** | **Template** | ✅ `packages/network/` (template) | Git + script |
 | Alacritty | Gentleman.Dots | ❌ No versionar | Backup pre-instalación |
 | Neovim | Gentleman.Dots | ❌ No versionar | Backup pre-instalación |
 | Fish/Zsh | Gentleman.Dots | ❌ No versionar | Backup pre-instalación |
@@ -72,6 +73,13 @@ Este es un sistema **Omarchy** (distro Arch Linux preconfigurada con Hyprland, W
 │       → Stow --restow
 │       → Agregar a STOW_PACKAGES en bootstrap.sh
 │
+├── ¿Es config de red estática (IP fija)?
+│   └── → Editar STATIC_IP en scripts/network-setup.sh
+│       → O pasar STATIC_IP=192.168.100.X como variable de entorno
+│       → Ejecutar: sudo ~/.dotfiles/scripts/network-setup.sh
+│       → El template está en packages/network/20-ethernet.network
+│       → Committear cambios a Git
+│
 ├── ¿Es backup?
 │   └── → Usar scripts/backup.sh con flags:
 │       → --full --push  (completo + GitHub)
@@ -81,6 +89,7 @@ Este es un sistema **Omarchy** (distro Arch Linux preconfigurada con Hyprland, W
 └── ¿Es restauración?
     └── → Ejecutar scripts/restore.sh
         → --auto para evitar prompts interactivos
+        → Incluye paso de configuración de red estática
 ```
 
 ### 1.5 Comandos Frecuentes
@@ -103,6 +112,15 @@ cd ~/.dotfiles && git status
 
 # Commit y push rápido
 cd ~/.dotfiles && git add -A && git commit -m "update: $(date +%Y-%m-%d)" && git push
+
+# Configurar IP estática del servidor
+sudo ~/.dotfiles/scripts/network-setup.sh
+
+# Con IP personalizada (sin modificar el script)
+STATIC_IP=192.168.100.99 sudo ~/.dotfiles/scripts/network-setup.sh
+
+# Ver estado actual de la red
+~/.dotfiles/scripts/network-setup.sh --status
 
 # Makefile shortcuts (desde el proyecto)
 make backup
@@ -133,6 +151,8 @@ make push
 | Editor | Neovim + LazyVim (Gentleman.Dots) |
 | Prompt | Starship (Stow) |
 | Gestor dotfiles | GNU Stow |
+| Gestor de red | systemd-networkd + systemd-resolved |
+| IP estática | `192.168.100.81` (template en `packages/network/`) |
 | Versionado | Git → GitHub |
 | Shell scripts | Bash |
 | Disco externo | NTFS, montado en `/mnt/disc-a00` |
@@ -155,14 +175,17 @@ make push
 │   │   ├── git/.config/git/
 │   │   ├── lazygit/.config/lazygit/
 │   │   └── starship/.config/starship.toml
-│   ├── packages/                    ← Listas de paquetes
+│   ├── packages/                    ← Listas de paquetes y configs
 │   │   ├── pacman-official.txt
 │   │   ├── pacman-aur.txt
-│   │   └── flatpak.txt
+│   │   ├── flatpak.txt
+│   │   └── network/                 ← Template de red estática
+│   │       └── 20-ethernet.network
 │   ├── scripts/                     ← Scripts automatizados
 │   │   ├── backup.sh
 │   │   ├── restore.sh
-│   │   └── bootstrap.sh
+│   │   ├── bootstrap.sh
+│   │   └── network-setup.sh         ← Configuración IP estática
 │   └── .gitignore
 │
 ├── .config/                         ← CONFIGURACIONES ACTIVAS
@@ -285,8 +308,9 @@ cd ~/.dotfiles && ./scripts/restore.sh --auto
 2. Restaura paquetes desde `packages/pacman-official.txt`
 3. Stow todos los dotfiles
 4. Restaura `/etc/` desde backup externo (opcional)
-5. Instala Gentleman.Dots (opcional)
-6. Reaplica tema Omarchy
+5. Configura IP estática del servidor (opcional)
+6. Instala Gentleman.Dots (opcional)
+7. Reaplica tema Omarchy
 
 ### 2.5 Gentleman.Dots — Integración
 
@@ -313,7 +337,50 @@ omarchy theme set "Tokyo Night"
 omarchy restart waybar
 ```
 
-### 2.6 Disco Externo — Montaje
+### 2.6 Configuración de Red Estática
+
+**Gestor:** `systemd-networkd` + `systemd-resolved`
+**Interfaz:** `enp3s0` (ethernet)
+**IP por defecto:** `192.168.100.81/24`
+**Gateway:** `192.168.100.1`
+**DNS:** `9.9.9.9` (Quad9), `2620:fe::9`
+
+**Archivos involucrados:**
+- `packages/network/20-ethernet.network` — Template versionado en Git (contiene placeholder `__STATIC_IP__`)
+- `scripts/network-setup.sh` — Script que aplica la configuración (usa `sudo`)
+
+**Cómo cambiar la IP:**
+```bash
+# Opción 1: Variable de entorno (no modifica archivos)
+STATIC_IP=192.168.100.99 sudo ~/.dotfiles/scripts/network-setup.sh
+
+# Opción 2: Editar valor por defecto en el script
+#   Editar STATIC_IP en scripts/network-setup.sh
+#   sudo ~/.dotfiles/scripts/network-setup.sh
+
+# Opción 3: Editar template directamente
+#   Editar packages/network/20-ethernet.network
+#   sudo systemctl restart systemd-networkd
+```
+
+**Cómo volver a DHCP (temporal):**
+```bash
+sudo ~/.dotfiles/scripts/network-setup.sh --dhcp
+```
+
+**Ver estado de red:**
+```bash
+~/.dotfiles/scripts/network-setup.sh --status
+```
+
+**Convención:**
+- El template de red se versiona en Git (dentro de `packages/network/`)
+- La IP es configurable via `STATIC_IP` (variable de entorno)
+- El script `network-setup.sh` se encarga de: copiar template a `/etc/systemd/network/`, reemplazar placeholder, reiniciar systemd-networkd
+- Durante restauración, `restore.sh` pregunta si se desea configurar la IP estática
+- El backup de `/etc/` (`backup.sh --full`) también respalda la config activa en `/etc/systemd/network/`
+
+### 2.7 Disco Externo — Montaje
 
 **UUID:** `70FEE01EFEDFDB04`
 **Tipo:** `ntfs` (driver `ntfs3`)
@@ -325,7 +392,7 @@ UUID=70FEE01EFEDFDB04	/mnt/disc-a00	ntfs3	rw,noatime,uid=1000,gid=1000,iocharset
 
 **Nota:** Si el disco da error de permisos al escribir, verificar con `ls -la /mnt/disc-a00/`. Puede requerir `chmod o+w`.
 
-### 2.7 Estructura de Scripts
+### 2.8 Estructura de Scripts
 
 **bootstrap.sh — Una sola vez (setup inicial):**
 - Crea `~/.dotfiles/` con estructura
@@ -345,12 +412,20 @@ UUID=70FEE01EFEDFDB04	/mnt/disc-a00	ntfs3	rw,noatime,uid=1000,gid=1000,iocharset
 
 **restore.sh — En máquina nueva:**
 - Restaura paquetes, dotfiles, /etc
+- Configura IP estática del servidor (opcional)
 - Instala Gentleman.Dots (opcional)
 - Reaplica tema Omarchy
 - `--auto` para modo no interactivo
 - `--dry-run` para vista previa
 
-### 2.8 Makefile — Shortcuts
+**network-setup.sh — Configuración de red:**
+- Aplica IP estática con systemd-networkd
+- IP configurable via `STATIC_IP` (variable de entorno)
+- `--status` muestra estado actual de red
+- `--dhcp` vuelve a DHCP temporalmente
+- Requiere `sudo` (escribe en `/etc/systemd/network/`)
+
+### 2.9 Makefile — Shortcuts
 
 ```makefile
 make backup         # backup rápido
@@ -362,9 +437,11 @@ make diff           # cambios pendientes
 make bootstrap      # setup inicial (una vez)
 make restore        # restauración interactiva
 make restore-auto   # restauración automática
+make network        # configurar IP estática
+make network-status # mostrar estado de red
 ```
 
-### 2.9 Notas Técnicas
+### 2.10 Notas Técnicas
 
 - **Starship:** El archivo `~/.config/starship.toml` fue corregido para ser symlink de Stow (no lo gestiona Gentleman.Dots).
 - **Rama Git:** `main` (local y remoto). Rama `master` eliminada.
@@ -372,7 +449,7 @@ make restore-auto   # restauración automática
 - **Contenedores (futuro):** Dokploy + Docker volumes en disco externo.
 - **Omarchy hooks:** Se puede agregar hook `post-update.d/99-backup-dotfiles` para backup automático.
 
-### 2.10 Glosario
+### 2.11 Glosario
 
 | Término | Significado |
 |---------|------------|
