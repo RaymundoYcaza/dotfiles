@@ -165,18 +165,18 @@ restore_etc_backup() {
 restore_dokploy() {
     log_info "=== Dokploy (PaaS - contenedores) ==="
 
-    if [ ! -f "${DOTFILES_DIR}/scripts/dokploy-setup.sh" ]; then
-        log_info "No se encontró scripts/dokploy-setup.sh. Omitiendo Dokploy."
-        return
-    fi
-
-    if confirm "¿Instalar Dokploy para gestión de contenedores?"; then
-        log_info "El instalador de Dokploy es interactivo (pide email/dominio)."
-        log_info "Ejecutalo manualmente cuando estés listo:"
+    if [ -x "${DOTFILES_DIR}/scripts/dokploy-setup.sh" ]; then
+        log_info "Dokploy requiere instalación interactiva (email/dominio)."
+        log_info "Para instalar después de la restauración:"
         log_info "  sudo ~/.dotfiles/scripts/dokploy-setup.sh"
-        log_info ""
-        log_info "O ejecutá el instalador directo:"
+        echo ""
+        log_info "O directo:"
         log_info "  curl -sSL https://dokploy.com/install.sh | sh"
+        echo ""
+        log_info "Post-instalación:"
+        log_info "  1. http://192.168.100.81:3000 → crear cuenta"
+        log_info "  2. Configurar backup S3 en Web Server → Backups"
+        log_info "  3. Volúmenes en /mnt/disc-a00/Z01-DEVOPS/state/"
     fi
 }
 
