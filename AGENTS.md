@@ -915,6 +915,10 @@ WRAPPER
 chmod +x ~/.local/bin/goose-desktop
 ```
 
+**Requisitos:** `ar` (binutils) y `tar` con soporte zstd vienen incluidos en
+Arch Linux. Si Goose Desktop no arranca, probar instalando `ffmpeg`:
+`sudo pacman -S ffmpeg` (puede faltar `libffmpeg.so`).
+
 **Nota:** El AUR (`goose-desktop-bin`) puede fallar si `yay` no tiene sesión sudo
 activa. La extracción manual del .deb es más confiable.
 
