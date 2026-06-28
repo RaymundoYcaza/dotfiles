@@ -531,6 +531,7 @@ libnsbmp
 libnsgif
 libnsl
 libnumbertext
+libnvidia-container
 libnvme
 libobjc
 libodfgen
@@ -731,6 +732,7 @@ nss
 nss-mdns
 nvidia-580xx-dkms
 nvidia-580xx-utils
+nvidia-container-toolkit
 obs-studio
 obsidian
 ocl-icd
