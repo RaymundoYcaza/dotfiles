@@ -81,19 +81,46 @@ network:
 network-status:
 	@$(SCRIPTS)/network-setup.sh --status
 
+# ─── Ollama ────────────────────────────────────────────────────────────────────
+
+ollama:
+	@echo "🤖 Configurando Ollama..."
+	@sudo $(SCRIPTS)/ollama-setup.sh
+
+ollama-status:
+	@$(SCRIPTS)/ollama-setup.sh --status
+
+ollama-logs:
+	@cd /mnt/disc-a00/Z01-DEVOPS/containers/ollama && docker compose logs -f
+
+# ─── Samba ──────────────────────────────────────────────────────────────────────
+
+samba:
+	@echo "🗂️ Configurando Samba..."
+	@sudo $(SCRIPTS)/samba-setup.sh
+
+samba-status:
+	@$(SCRIPTS)/samba-setup.sh --status
+
 # ─── Ayuda ────────────────────────────────────────────────────────────────────
 
 help:
 	@echo "📖 Comandos disponibles:"
 	@echo ""
-	@echo "  make backup         Respaldo rápido"
-	@echo "  make backup-full    Respaldo completo + push a GitHub"
-	@echo "  make push           Commit y push a GitHub"
-	@echo "  make packages       Regenerar listas de paquetes"
-	@echo "  make status         Estado del repo de dotfiles"
-	@echo "  make diff           Cambios pendientes"
-	@echo "  make bootstrap      Inicializar repo (SOLO UNA VEZ)"
-	@echo "  make bootstrap-dry  Vista previa del bootstrap"	@echo "  make restore         Restauración interactiva"
-	@echo "  make restore-auto    Restauración automática"
-	@echo "  make network         Configurar IP estática"
-	@echo "  make network-status  Mostrar estado de red"
+	@echo "  make backup            Respaldo rápido"
+	@echo "  make backup-full       Respaldo completo + push"
+	@echo "  make push              Commit y push a GitHub"
+	@echo "  make packages          Regenerar listas de paquetes"
+	@echo "  make status            Estado del repo de dotfiles"
+	@echo "  make diff              Cambios pendientes"
+	@echo "  make bootstrap         Inicializar repo (UNA VEZ)"
+	@echo "  make bootstrap-dry     Vista previa del bootstrap"
+	@echo "  make restore           Restauración interactiva"
+	@echo "  make restore-auto      Restauración automática"
+	@echo "  make network           Configurar IP estática"
+	@echo "  make network-status    Mostrar estado de red"
+	@echo "  make ollama            Configurar Ollama"
+	@echo "  make ollama-status     Estado de Ollama"
+	@echo "  make ollama-logs       Logs de Ollama en tiempo real"
+	@echo "  make samba             Configurar Samba"
+	@echo "  make samba-status      Estado de Samba"

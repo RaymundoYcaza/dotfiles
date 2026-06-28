@@ -310,11 +310,13 @@ final_instructions() {
     echo "   │    → /mnt/disc-a00/                         │"
     echo "   │ 3. 🌐 Verificar IP estática:                │"
     echo "   │    ip addr show                             │"
-    echo "   │ 4. 🐳 Configurar Dokploy y contenedores     │"
-    echo "   │ 5. 📦 Revisar packages restantes:           │"
+    echo "   │ 4. 🤖 Configurar Ollama (IA local)         │"
+    echo "   │    sudo ~/.dotfiles/scripts/ollama-setup.sh │"
+    echo "   │ 5. 🐳 Configurar Dokploy y contenedores     │"
+    echo "   │ 6. 📦 Revisar packages restantes:           │"
     echo "   │    cat ~/.dotfiles/packages/*.txt           │"
-    echo "   │ 6. 🔄 git pull (últimos cambios)            │"
-    echo "   │ 7. 🚀 Disfrutar tu sistema                  │"
+    echo "   │ 7. 🔄 git pull (últimos cambios)            │"
+    echo "   │ 8. 🚀 Disfrutar tu sistema                  │"
     echo "   └─────────────────────────────────────────────┘"
 }
 

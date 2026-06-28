@@ -359,14 +359,18 @@ cd ~/.dotfiles && ./scripts/restore.sh
 cd ~/.dotfiles && ./scripts/restore.sh --auto
 ```
 
-**Lo que hace restore.sh:**
+**Lo que hace restore.sh (11 pasos):**
 1. Verifica prerequisitos (git, stow, pacman, ~/.dotfiles)
 2. Restaura paquetes desde `packages/pacman-official.txt`
 3. Stow todos los dotfiles
 4. Restaura `/etc/` desde backup externo (opcional)
-5. Configura IP estática del servidor (opcional)
-6. Instala Gentleman.Dots (opcional)
-7. Reaplica tema Omarchy
+5. Configura IP estática `192.168.100.81` (opcional)
+6. Configura Samba para compartir disco con Windows (opcional)
+7. Configura Ollama (IA local - Docker) — muestra instrucciones
+8. Instala Dokploy (PaaS - contenedores) — muestra instrucciones
+9. Restaura hooks personalizados de Omarchy (post-update)
+10. Instala Gentleman.Dots (opcional)
+11. Reaplica tema Omarchy Tokyo Night
 
 ### 2.5 Gentleman.Dots — Integración
 
@@ -469,6 +473,10 @@ UUID=70FEE01EFEDFDB04	/mnt/disc-a00	ntfs3	rw,noatime,uid=1000,gid=1000,iocharset
 **restore.sh — En máquina nueva:**
 - Restaura paquetes, dotfiles, /etc
 - Configura IP estática del servidor (opcional)
+- Configura Samba para compartir disco (opcional)
+- Configura Ollama (IA local - Docker) (opcional)
+- Configura Dokploy (PaaS - contenedores) (opcional)
+- Restaura hooks personalizados de Omarchy (opcional)
 - Instala Gentleman.Dots (opcional)
 - Reaplica tema Omarchy
 - `--auto` para modo no interactivo
@@ -535,11 +543,12 @@ Durante restauración, `restore.sh` copia este hook desde el repo a la ubicació
 
 - **Starship:** El archivo `~/.config/starship.toml` fue corregido para ser symlink de Stow (no lo gestiona Gentleman.Dots).
 - **Rama Git:** `main` (local y remoto). Rama `master` eliminada.
-- **GitHub:** Repositorio `RaymundoYcaza/dotfiles`. Autenticación con token `ghp_...`.
-- **Contenedores (futuro):** Dokploy + Docker volumes en disco externo.
-- **Omarchy hooks:** Se puede agregar hook `post-update.d/99-backup-dotfiles` para backup automático.
+- **GitHub:** Repositorio `RaymundoYcaza/dotfiles`. Autenticación SSH.
+- **Contenedores:** Dokploy (Swarm) + Ollama (Docker Compose). Volúmenes en disco externo.
+- **Omarchy hooks:** `post-update.d/99-backup-dotfiles` para backup automático.
+- **Modelos IA:** GGUF en Blackpearl. Blobs importados en state/ollama/. Modelfiles versionados.
 
-### 2.11 Configuración Samba
+### 2.12 Configuración Samba
 
 **Share:** `\\192.168.100.81\disc-a00`
 **Usuario:** `inorizonti`
@@ -570,7 +579,176 @@ sudo ~/.dotfiles/scripts/samba-setup.sh --password
 - Durante restauración, `restore.sh` pregunta si se desea configurar Samba
 - El backup de `/etc/` (`backup.sh --full`) respalda la config activa
 
-### 2.12 Glosario
+### 2.13 Gestión de Ollama (IA Local)
+
+**Arquitectura:**
+
+```
+┌─────────────────────────────────────────────────────┐
+│                   Ollama (Docker)                     │
+│  ┌─────────────────────────────────────────────────┐ │
+│  │  ollama/ollama:latest                            │ │
+│  │  Puerto: 11434                                   │ │
+│  │  GPU: NVIDIA GTX 1050 Ti (4GB VRAM)              │ │
+│  │  API: /v1/chat/completions (OpenAI-compatible)   │ │
+│  └──────────────┬──────────────────────┬────────────┘ │
+│                  │                      │              │
+│         ┌────────▼────────┐    ┌───────▼───────┐      │
+│         │   state/ollama  │    │   /models/     │      │
+│         │  (blobs+manif.) │    │  (GGUF, ro)   │      │
+│         │  /mnt/disc-a00/ │    │  /mnt/blackpearl/    │
+│         └─────────────────┘    └───────────────┘      │
+└─────────────────────────────────────────────────────┘
+```
+
+**Archivos involucrados:**
+
+| Archivo | Ubicación | Versionado |
+|---------|-----------|-----------|
+| `docker-compose.yml` | `packages/ollama/` | ✅ Git |
+| `.env.sample` | `packages/ollama/` | ✅ Git |
+| `Modelfiles/` | `packages/ollama/Modelfiles/` | ✅ Git |
+| Setup script | `scripts/ollama-setup.sh` | ✅ Git |
+| Blobs de modelos | `state/ollama/models/blobs/` | ❌ (grandes) |
+| `docker-compose.yml` activo | `/mnt/disc-a00/Z01-DEVOPS/containers/ollama/` | ❌ (se regenera) |
+| Modelos GGUF | `/mnt/blackpearl/lmstudio_models/` | ❌ (externo) |
+
+**Comandos de uso diario:**
+
+```bash
+# === Estado y monitoreo ===
+cd /mnt/disc-a00/Z01-DEVOPS/containers/ollama
+
+# Ver contenedor
+docker compose ps
+
+# Ver logs en tiempo real
+docker compose logs -f
+
+# Ver GPU en uso (fuera del contenedor)
+nvidia-smi
+
+# Ver modelos disponibles en Ollama
+docker compose exec ollama ollama list
+
+# Ver modelo cargado actualmente en VRAM
+docker compose exec ollama ollama ps
+
+# Estado completo vía script
+~/.dotfiles/scripts/ollama-setup.sh --status
+
+# Probar API
+~/.dotfiles/scripts/ollama-setup.sh --test
+```
+
+```bash
+# === Ciclo de vida ===
+# Iniciar (después de reboot)
+cd /mnt/disc-a00/Z01-DEVOPS/containers/ollama
+docker compose up -d
+
+# Detener
+cd /mnt/disc-a00/Z01-DEVOPS/containers/ollama
+docker compose down
+
+# Sin sudo via script
+sudo ~/.dotfiles/scripts/ollama-setup.sh
+
+# Setup automático (sin confirmaciones)
+sudo ~/.dotfiles/scripts/ollama-setup.sh --auto
+```
+
+**Workflow de importación de modelos GGUF:**
+
+```bash
+# 1. Verificar qué modelos GGUF están disponibles en Blackpearl
+ls /mnt/blackpearl/lmstudio_models/*/*.gguf
+
+# 2. Crear Modelfile (apunta al GGUF dentro del contenedor)
+#    El volumen /models/ monta /mnt/blackpearl/lmstudio_models/
+echo 'FROM /models/<directorio>/<archivo>.gguf' > Modelfiles/<nombre>
+
+# Ejemplo con Qwen3.5-0.8B:
+echo 'FROM /models/diodel/Qwen3.5-0.8B-Q4_K_M-GGUF/qwen3.5-0.8b-Q4_K_M.gguf' \
+  > Modelfiles/qwen3.5-0.8b
+
+# 3. Importar a Ollama (crea el modelo a partir del GGUF)
+docker compose exec ollama ollama create <nombre> -f /Modelfiles/<nombre>
+
+# 4. Verificar que se importó
+docker compose exec ollama ollama list
+
+# 5. Probar el modelo
+curl http://192.168.100.81:11434/api/generate -d '{
+  "model": "<nombre>",
+  "prompt": "Hola, ¿cómo estás?",
+  "stream": false
+}'
+
+# 6. Versionar el Modelfile
+cp Modelfiles/<nombre> ~/.dotfiles/packages/ollama/Modelfiles/
+cd ~/.dotfiles && git add -A && git commit -m "feat: add Modelfile for <nombre>" && git push
+```
+
+**API compatible con OpenAI (v1):**
+
+Ollama expone un endpoint compatible con la API de OpenAI en:
+`http://192.168.100.81:11434/v1`
+
+```bash
+# Chat completion (OpenAI-compatible)
+curl http://192.168.100.81:11434/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "qwen3.5-0.8b",
+    "messages": [{"role": "user", "content": "Hola"}],
+    "stream": false
+  }'
+
+# Embeddings
+curl http://192.168.100.81:11434/api/embed \
+  -d '{
+    "model": "qwen3.5-0.8b",
+    "input": "El cielo es azul"
+  }'
+```
+
+**Backup de modelos (blobs de Ollama):**
+
+Los blobs de modelos importados están en `state/ollama/models/blobs/`. Son archivos grandes (cientos de MB a GB) que NO se versionan en Git. Se respaldan con:
+
+```bash
+# Backup rápido de state/ollama al disco externo
+rsync -av /mnt/disc-a00/Z01-DEVOPS/state/ollama/ \
+  /mnt/disc-a00/Z01_BACKUPS/omarchy-backups/ollama-state/
+
+# O usando backup.sh --full (si se actualiza para incluirlo)
+cd ~/.dotfiles && ./scripts/backup.sh --full --push
+```
+
+**Restauración de Ollama en máquina nueva:**
+
+```bash
+# 1. Restaurar dotfiles (incluye docker-compose.yml y scripts)
+cd ~/.dotfiles && ./scripts/restore.sh --auto
+
+# 2. Restaurar state/ollama desde backup externo (si existe)
+rsync -av /mnt/disc-a00/Z01_BACKUPS/omarchy-backups/ollama-state/ \
+  /mnt/disc-a00/Z01-DEVOPS/state/ollama/
+
+# 3. Iniciar Ollama
+sudo ~/.dotfiles/scripts/ollama-setup.sh --auto
+
+# 4. Verificar modelos importados
+docker compose exec ollama ollama list
+# Si no hay modelos, reimportar desde Modelfiles versionados:
+for mf in ~/.dotfiles/packages/ollama/Modelfiles/*; do
+  name=$(basename "$mf")
+  docker compose exec ollama ollama create "$name" -f "/Modelfiles/$name"
+done
+```
+
+### 2.14 Glosario
 
 | Término | Significado |
 |---------|------------|

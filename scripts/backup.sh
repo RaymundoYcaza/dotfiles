@@ -239,6 +239,17 @@ main() {
                 log_warn "Error al respaldar volúmenes Docker"
             log_ok "Volúmenes Docker respaldados."
         fi
+
+        # Estado de Ollama (blobs de modelos importados)
+        local ollama_state="/mnt/disc-a00/Z01-DEVOPS/state/ollama"
+        if [ -d "${ollama_state}" ] && [ "$(du -s "${ollama_state}" 2>/dev/null | cut -f1)" -gt 0 ]; then
+            log_info "Respaldando state/ollama (blobs de modelos)..."
+            local ollama_backup="${BACKUP_BASE}/ollama-state"
+            mkdir -p "${ollama_backup}"
+            rsync -av --delete "${ollama_state}/" "${ollama_backup}/" 2>/dev/null || \
+                log_warn "Error al respaldar state/ollama"
+            log_ok "State/ollama respaldado (tamaño: $(du -sh "${ollama_state}" 2>/dev/null | cut -f1))."
+        fi
     fi
 
     echo ""
