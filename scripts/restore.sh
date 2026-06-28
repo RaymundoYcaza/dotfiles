@@ -172,9 +172,12 @@ restore_network_config() {
 
     if confirm "¿Configurar IP estática del servidor?"; then
         log_info "Ejecutando network-setup.sh..."
-        bash "${DOTFILES_DIR}/scripts/network-setup.sh" || \
+        if bash "${DOTFILES_DIR}/scripts/network-setup.sh"; then
+            log_ok "Red configurada exitosamente."
+        else
             log_warn "Error al configurar red. Podés hacerlo manualmente después:"
             log_info "  STATIC_IP=192.168.100.X ${DOTFILES_DIR}/scripts/network-setup.sh"
+        fi
     else
         log_info "Omitiendo configuración de red. La IP se asignará por DHCP."
         log_info "Para configurar después:"
