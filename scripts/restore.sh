@@ -189,20 +189,39 @@ restore_ollama() {
     fi
 
     local compose_dst="/mnt/disc-a00/Z01-DEVOPS/containers/ollama/docker-compose.yml"
+    local ollama_state="/mnt/disc-a00/Z01-DEVOPS/state/ollama"
+    local ollama_backup="${BACKUP_BASE}/ollama-state"
 
     log_info "Ollama corre en Docker con GPU passthrough."
-    log_info "Para instalar después de la restauración:"
-    log_info "  1. sudo ~/.dotfiles/scripts/ollama-setup.sh"
-    echo ""
-    log_info "Esto creará el docker-compose.yml en:"
-    log_info "  ${compose_dst}"
     log_info ""
+
+    # Restaurar blobs desde backup si existen
+    if [ -d "${ollama_backup}" ] && [ "$(du -s "${ollama_backup}" 2>/dev/null | cut -f1)" -gt 0 ]; then
+        local backup_size=$(du -sh "${ollama_backup}" 2>/dev/null | cut -f1)
+        log_info "Backup de state/ollama encontrado (${backup_size})."
+        if confirm "¿Restaurar state/ollama (blobs de modelos) desde el backup?"; then
+            mkdir -p "${ollama_state}"
+            rsync -av "${ollama_backup}/" "${ollama_state}/" 2>/dev/null || \
+                log_warn "Error al restaurar state/ollama"
+            log_ok "State/ollama restaurado desde backup."
+        fi
+    else
+        log_info "No hay backup de state/ollama. Los modelos se reimportarán desde Modelfiles."
+    fi
+
+    echo ""
+    log_info "Para iniciar Ollama después de la restauración:"
+    log_info "  sudo ~/.dotfiles/scripts/ollama-setup.sh"
+    echo ""
     log_info "Modelos GGUF en /mnt/blackpearl/lmstudio_models/"
     log_info "API: http://192.168.100.81:11434/v1 (OpenAI compatible)"
     log_info ""
-    log_info "Para importar un modelo GGUF:"
+    log_info "Para reimportar modelos desde Modelfiles:"
     log_info "  cd /mnt/disc-a00/Z01-DEVOPS/containers/ollama"
-    log_info "  docker compose exec ollama ollama create <name> -f /Modelfiles/<file>"
+    log_info "  for mf in ~/.dotfiles/packages/ollama/Modelfiles/*; do"
+    log_info "    name=\$(basename \"\$mf\")"
+    log_info "    docker compose exec ollama ollama create \"\$name\" -f \"/Modelfiles/\$name\""
+    log_info "  done"
 }
 
 restore_omarchy_hooks() {

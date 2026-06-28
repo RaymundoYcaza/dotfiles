@@ -322,6 +322,7 @@ cd ~/.dotfiles/stow_packages && for pkg in */; do stow --restow --target=$HOME "
 | Paquetes | Semanal / post-cambio | Git + disco externo |
 | /etc/ | Semanal | Disco externo (tar.gz) |
 | Docker volumes | Diario (futuro) | Disco externo (rsync) |
+| Ollama state (blobs) | Con backup --full | Disco externo (rsync) |
 
 **Comandos:**
 
