@@ -162,6 +162,24 @@ restore_etc_backup() {
     fi
 }
 
+restore_dokploy() {
+    log_info "=== Dokploy (PaaS - contenedores) ==="
+
+    if [ ! -f "${DOTFILES_DIR}/scripts/dokploy-setup.sh" ]; then
+        log_info "No se encontró scripts/dokploy-setup.sh. Omitiendo Dokploy."
+        return
+    fi
+
+    if confirm "¿Instalar Dokploy para gestión de contenedores?"; then
+        log_info "El instalador de Dokploy es interactivo (pide email/dominio)."
+        log_info "Ejecutalo manualmente cuando estés listo:"
+        log_info "  sudo ~/.dotfiles/scripts/dokploy-setup.sh"
+        log_info ""
+        log_info "O ejecutá el instalador directo:"
+        log_info "  curl -sSL https://dokploy.com/install.sh | sh"
+    fi
+}
+
 restore_omarchy_hooks() {
     log_info "=== Hooks de Omarchy ==="
 
@@ -307,9 +325,10 @@ main() {
         echo "  4. Restaurar /etc desde backup externo"
         echo "  5. Configurar IP estática"
         echo "  6. Configurar Samba (compartir disco con Windows)"
-        echo "  7. Restaurar hooks personalizados de Omarchy"
-        echo "  8. Instalar Gentleman.Dots (opcional)"
-        echo "  9. Reaplicar tema Omarchy"
+        echo "  7. Instalar Dokploy (PaaS - gestión de contenedores)"
+        echo "  8. Restaurar hooks personalizados de Omarchy"
+        echo "  9. Instalar Gentleman.Dots (opcional)"
+        echo " 10. Reaplicar tema Omarchy"
         exit 0
     fi
 
@@ -319,6 +338,7 @@ main() {
     restore_etc_backup
     restore_network_config
     restore_samba
+    restore_dokploy
     restore_omarchy_hooks
     install_gentleman_dots
     restore_omarchy_theme

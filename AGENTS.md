@@ -38,6 +38,7 @@ Este es un sistema **Omarchy** (distro Arch Linux preconfigurada con Hyprland, W
 | **fastfetch** | **Stow** | ✅ `stow_packages/fastfetch/` | Git + disco |
 | **git** | **Stow** | ✅ `stow_packages/git/` | Git + disco |
 | **lazygit** | **Stow** | ✅ `stow_packages/lazygit/` | Git + disco |
+| Dokploy | Script | ✅ `scripts/dokploy-setup.sh` | Backup /etc + disco |
 | Samba | Template | ✅ `packages/samba/smb.conf` | Git + script |
 | **starship** | **Stow** | ✅ `stow_packages/starship/` | Git + disco |
 | **Red estática** | **Template** | ✅ `packages/network/` (template) | Git + script |
