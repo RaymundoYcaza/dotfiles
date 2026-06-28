@@ -428,8 +428,8 @@ main() {
     restore_samba
     restore_ollama
     restore_dokploy
-    restore_gentleman_dots_configs
     install_gentleman_dots
+    restore_gentleman_dots_configs
     restore_omarchy_theme
     final_instructions
 }
