@@ -323,6 +323,7 @@ cd ~/.dotfiles/stow_packages && for pkg in */; do stow --restow --target=$HOME "
 | /etc/ | Semanal | Disco externo (tar.gz) |
 | Docker volumes | Diario (futuro) | Disco externo (rsync) |
 | Ollama state (blobs) | Con backup --full | Disco externo (rsync) |
+| Gentleman.Dots configs personalizados | Con backup --full | Disco externo (rsync) |
 
 **Comandos:**
 
@@ -360,7 +361,7 @@ cd ~/.dotfiles && ./scripts/restore.sh
 cd ~/.dotfiles && ./scripts/restore.sh --auto
 ```
 
-**Lo que hace restore.sh (11 pasos):**
+**Lo que hace restore.sh (12 pasos):**
 1. Verifica prerequisitos (git, stow, pacman, ~/.dotfiles)
 2. Restaura paquetes desde `packages/pacman-official.txt`
 3. Stow todos los dotfiles
@@ -370,8 +371,9 @@ cd ~/.dotfiles && ./scripts/restore.sh --auto
 7. Configura Ollama (IA local - Docker) — muestra instrucciones
 8. Instala Dokploy (PaaS - contenedores) — muestra instrucciones
 9. Restaura hooks personalizados de Omarchy (post-update)
-10. Instala Gentleman.Dots (opcional)
-11. Reaplica tema Omarchy Tokyo Night
+10. Restaura configs personalizados de Gentleman.Dots (nvim, alacritty, fish, tmux) desde backup externo (opcional)
+11. Instala Gentleman.Dots (opcional)
+12. Reaplica tema Omarchy Tokyo Night
 
 ### 2.5 Gentleman.Dots — Integración
 

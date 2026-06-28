@@ -250,6 +250,19 @@ main() {
                 log_warn "Error al respaldar state/ollama"
             log_ok "State/ollama respaldado (tamaño: $(du -sh "${ollama_state}" 2>/dev/null | cut -f1))."
         fi
+
+        # Configs de Gentleman.Dots (cambios personalizados del usuario)
+        log_info "Respaldando configs de Gentleman.Dots..."
+        for dir in nvim alacritty fish tmux; do
+            local src="${HOME}/.config/${dir}"
+            local dst="${BACKUP_BASE}/gentleman-dots/${dir}"
+            if [ -d "${src}" ]; then
+                mkdir -p "${dst}"
+                rsync -av --delete "${src}/" "${dst}/" 2>/dev/null || \
+                    log_warn "Error al respaldar gentleman-dots/${dir}"
+                log_ok "  gentleman-dots/${dir} respaldado."
+            fi
+        done
     fi
 
     echo ""

@@ -290,6 +290,47 @@ restore_samba() {
     fi
 }
 
+restore_gentleman_dots_configs() {
+    log_info "=== Restaurando configs personalizados de Gentleman.Dots ==="
+
+    local gentleman_backup="${BACKUP_BASE}/gentleman-dots"
+
+    if [ ! -d "${gentleman_backup}" ]; then
+        log_warn "No hay backup de configs de Gentleman.Dots en ${gentleman_backup}"
+        log_info "Los cambios personalizados (splash de Neovim, etc.) se perderán al reinstalar."
+        return
+    fi
+
+    local has_data=false
+    for dir in nvim alacritty fish tmux; do
+        if [ -d "${gentleman_backup}/${dir}" ] && \
+           [ "$(du -s "${gentleman_backup}/${dir}" 2>/dev/null | cut -f1)" -gt 0 ]; then
+            has_data=true
+            break
+        fi
+    done
+
+    if [ "$has_data" = false ]; then
+        log_info "Los directorios de backup de Gentleman.Dots están vacíos. Omitiendo..."
+        return
+    fi
+
+    if confirm "¿Restaurar configs personalizados de Gentleman.Dots? (nvim, alacritty, fish, tmux)"; then
+        for dir in nvim alacritty fish tmux; do
+            local src="${gentleman_backup}/${dir}"
+            local dst="${HOME}/.config/${dir}"
+            if [ -d "${src}" ] && [ "$(du -s "${src}" 2>/dev/null | cut -f1)" -gt 0 ]; then
+                mkdir -p "${dst}"
+                log_info "  Restaurando ${dir}..."
+                rsync -av "${src}/" "${dst}/" 2>/dev/null || \
+                    log_warn "  Error al restaurar ${dir}"
+                log_ok "  → ${dir} restaurado."
+            fi
+        done
+        log_ok "Configs personalizados de Gentleman.Dots restaurados."
+    fi
+}
+
 install_gentleman_dots() {
     log_info "=== Gentleman.Dots ==="
 
@@ -387,7 +428,7 @@ main() {
     restore_samba
     restore_ollama
     restore_dokploy
-    restore_omarchy_hooks
+    restore_gentleman_dots_configs
     install_gentleman_dots
     restore_omarchy_theme
     final_instructions
