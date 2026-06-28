@@ -39,6 +39,7 @@ Este es un sistema **Omarchy** (distro Arch Linux preconfigurada con Hyprland, W
 | **git** | **Stow** | ✅ `stow_packages/git/` | Git + disco |
 | **lazygit** | **Stow** | ✅ `stow_packages/lazygit/` | Git + disco |
 | Dokploy | Script | ✅ `scripts/dokploy-setup.sh` | Backup /etc + disco |
+| Ollama | Docker Compose | ✅ `scripts/ollama-setup.sh` | Git + script + disco |
 | Samba | Template | ✅ `packages/samba/smb.conf` | Git + script |
 | **starship** | **Stow** | ✅ `stow_packages/starship/` | Git + disco |
 | **Red estática** | **Template** | ✅ `packages/network/` (template) | Git + script |
@@ -89,6 +90,15 @@ Este es un sistema **Omarchy** (distro Arch Linux preconfigurada con Hyprland, W
 │       → El template está en packages/network/20-ethernet.network
 │       → Committear cambios a Git
 │
+├── ¿Es Ollama (IA local)?
+│   └── → Script: ~/.dotfiles/scripts/ollama-setup.sh
+│       → docker-compose.yml en /mnt/disc-a00/Z01-DEVOPS/containers/ollama/
+│       → Modelos GGUF en /mnt/blackpearl/lmstudio_models/ (montados como /models/)
+│       → Datos persistentes en state/ollama/
+│       → API: http://192.168.100.81:11434/v1 (OpenAI-compatible)
+│       → Importar GGUF: docker compose exec ollama ollama create <name> -f /Modelfiles/<name>
+│       → Committear cambios a Git si se modifican Modelfiles o compose
+│
 ├── ¿Es backup?
 │   └── → Usar scripts/backup.sh con flags:
 │       → --full --push  (completo + GitHub)
@@ -130,6 +140,20 @@ sudo ~/.dotfiles/scripts/samba-setup.sh
 
 # Cambiar password de Samba
 sudo ~/.dotfiles/scripts/samba-setup.sh --password
+
+# === Ollama ===
+# Setup completo (crea docker-compose.yml + inicia contenedor)
+sudo ~/.dotfiles/scripts/ollama-setup.sh
+
+# Ver estado de Ollama
+~/.dotfiles/scripts/ollama-setup.sh --status
+
+# Probar API de Ollama
+~/.dotfiles/scripts/ollama-setup.sh --test
+
+# Importar modelo GGUF a Ollama
+cd /mnt/disc-a00/Z01-DEVOPS/containers/ollama
+docker compose exec ollama ollama create <name> -f /Modelfiles/<modelfile>
 
 # Verificar IP estática del servidor
 sudo ~/.dotfiles/scripts/network-setup.sh
@@ -177,7 +201,8 @@ make push
 | Versionado | Git → GitHub |
 | Shell scripts | Bash |
 | Disco externo | NTFS, montado en `/mnt/disc-a00` |
-| Contenedores | Docker / Dokploy (futuro) |
+| Contenedores | Docker / Dokploy |
+| IA Local | Ollama (Docker) en `/mnt/disc-a00/Z01-DEVOPS/containers/ollama/` |
 
 ---
 
@@ -201,17 +226,22 @@ make push
 │   │   ├── pacman-aur.txt
 │   │   ├── flatpak.txt
 │   │   ├── network/                 ← Template de red estática
-│   │   │   └── 20-ethernet.network
-│   │   └── samba/                   ← Template de Samba
-│   │       └── smb.conf
-│   │   └── omarchy-hooks/           ← Hooks de Omarchy versionados
-│   │       └── 99-backup-dotfiles
-│   ├── scripts/                     ← Scripts automatizados
-│   │   ├── backup.sh
-│   │   ├── restore.sh
-│   │   ├── bootstrap.sh
-│   │   ├── network-setup.sh         ← Configuración IP estática
-│   │   └── samba-setup.sh           ← Configuración Samba
+│   │   │   └── 20-ethernet.network    │   │   ├── samba/                   ← Template de Samba
+    │   │   │   └── smb.conf
+    │   │   ├── omarchy-hooks/           ← Hooks de Omarchy versionados
+    │   │   │   └── 99-backup-dotfiles
+    │   │   └── ollama/                  ← Docker Compose + Modelfiles
+    │   │       ├── docker-compose.yml
+    │   │       ├── .env.sample
+    │   │       └── Modelfiles/
+    │   │           └── README.md
+    │   ├── scripts/                     ← Scripts automatizados
+    │   │   ├── backup.sh
+    │   │   ├── restore.sh
+    │   │   ├── bootstrap.sh
+    │   │   ├── network-setup.sh         ← Configuración IP estática
+    │   │   ├── samba-setup.sh           ← Configuración Samba
+    │   │   └── ollama-setup.sh          ← Configuración Ollama (Docker)
 │   └── .gitignore
 │
 ├── .config/                         ← CONFIGURACIONES ACTIVAS
@@ -458,6 +488,15 @@ UUID=70FEE01EFEDFDB04	/mnt/disc-a00	ntfs3	rw,noatime,uid=1000,gid=1000,iocharset
 - `--password` cambia password del usuario Samba
 - `--restart` reinicia el servicio
 - Requiere `sudo`
+
+**ollama-setup.sh — Servidor de IA local (Docker):**
+- Crea docker-compose.yml en `/mnt/disc-a00/Z01-DEVOPS/containers/ollama/`
+- Inicia contenedor con GPU passthrough (GTX 1050 Ti)
+- Monta modelos GGUF desde `/mnt/blackpearl/lmstudio_models/`
+- API: `http://192.168.100.81:11434/v1` (OpenAI-compatible)
+- `--status` muestra estado del contenedor y GPU
+- `--test` prueba la API
+- `--post-install` importa modelos y verifica
 
 ### 2.9 Makefile — Shortcuts
 

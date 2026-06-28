@@ -1,0 +1,44 @@
+# Ollama — Local LLM Server (versionado en dotfiles)
+# ==================================================
+# Este archivo es el template versionado en GitHub.
+# Se copia a /mnt/disc-a00/Z01-DEVOPS/containers/ollama/ durante la instalación.
+#
+# La ruta de los volúmenes es relativa a containers/ollama/:
+#   ../../../state/ollama  →  /mnt/disc-a00/Z01-DEVOPS/state/ollama
+#   ../../../logs/ollama   →  /mnt/disc-a00/Z01-DEVOPS/logs/ollama
+#
+# Modelos GGUF montados desde Blackpearl: /mnt/blackpearl/lmstudio_models/
+#
+# API: http://192.168.100.81:11434 (OpenAI-compatible: /v1)
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    volumes:
+      # Datos persistentes (blobs, manifiestos de modelos)
+      - ../../../state/ollama:/root/.ollama
+      # Modelos GGUF desde Blackpearl (read-only)
+      - /mnt/blackpearl/lmstudio_models:/models:ro
+      # Modelfiles para importar GGUF locales
+      - ./Modelfiles:/Modelfiles
+      # Logs
+      - ../../../logs/ollama:/root/logs
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    networks:
+      - ollama_net
+
+networks:
+  ollama_net:
+    driver: bridge

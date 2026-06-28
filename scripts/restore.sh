@@ -180,6 +180,31 @@ restore_dokploy() {
     fi
 }
 
+restore_ollama() {
+    log_info "=== Ollama (IA local - Docker) ==="
+
+    if [ ! -x "${DOTFILES_DIR}/scripts/ollama-setup.sh" ]; then
+        log_warn "No se encontró scripts/ollama-setup.sh. Omitiendo Ollama."
+        return
+    fi
+
+    local compose_dst="/mnt/disc-a00/Z01-DEVOPS/containers/ollama/docker-compose.yml"
+
+    log_info "Ollama corre en Docker con GPU passthrough."
+    log_info "Para instalar después de la restauración:"
+    log_info "  1. sudo ~/.dotfiles/scripts/ollama-setup.sh"
+    echo ""
+    log_info "Esto creará el docker-compose.yml en:"
+    log_info "  ${compose_dst}"
+    log_info ""
+    log_info "Modelos GGUF en /mnt/blackpearl/lmstudio_models/"
+    log_info "API: http://192.168.100.81:11434/v1 (OpenAI compatible)"
+    log_info ""
+    log_info "Para importar un modelo GGUF:"
+    log_info "  cd /mnt/disc-a00/Z01-DEVOPS/containers/ollama"
+    log_info "  docker compose exec ollama ollama create <name> -f /Modelfiles/<file>"
+}
+
 restore_omarchy_hooks() {
     log_info "=== Hooks de Omarchy ==="
 
@@ -325,10 +350,11 @@ main() {
         echo "  4. Restaurar /etc desde backup externo"
         echo "  5. Configurar IP estática"
         echo "  6. Configurar Samba (compartir disco con Windows)"
-        echo "  7. Instalar Dokploy (PaaS - gestión de contenedores)"
-        echo "  8. Restaurar hooks personalizados de Omarchy"
-        echo "  9. Instalar Gentleman.Dots (opcional)"
-        echo " 10. Reaplicar tema Omarchy"
+        echo "  7. Configurar Ollama (IA local - Docker)"
+        echo "  8. Instalar Dokploy (PaaS - gestión de contenedores)"
+        echo "  9. Restaurar hooks personalizados de Omarchy"
+        echo " 10. Instalar Gentleman.Dots (opcional)"
+        echo " 11. Reaplicar tema Omarchy"
         exit 0
     fi
 
@@ -338,6 +364,7 @@ main() {
     restore_etc_backup
     restore_network_config
     restore_samba
+    restore_ollama
     restore_dokploy
     restore_omarchy_hooks
     install_gentleman_dots
