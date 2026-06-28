@@ -272,6 +272,14 @@ test_api() {
 
 main() {
     case "${1:-}" in
+        --auto)
+            AUTO_MODE="true"
+            # Fall through to install
+            ;&  # bash 4+ fall-through
+        --dry-run)
+            DRY_RUN="true"
+            # Fall through to install
+            ;&
         --status)
             show_status
             ;;
@@ -286,6 +294,8 @@ main() {
             echo ""
             echo "Opciones:"
             echo "  Sin argumentos    Instalación completa (prereq + install + post)"
+            echo "  --auto            Modo automático (sin confirmaciones)"
+            echo "  --dry-run         Vista previa"
             echo "  --status          Mostrar estado"
             echo "  --post-install    Solo pasos post-instalación"
             echo "  --test            Probar API"

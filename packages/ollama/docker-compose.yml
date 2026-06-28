@@ -4,8 +4,8 @@
 # Se copia a /mnt/disc-a00/Z01-DEVOPS/containers/ollama/ durante la instalación.
 #
 # La ruta de los volúmenes es relativa a containers/ollama/:
-#   ../../../state/ollama  →  /mnt/disc-a00/Z01-DEVOPS/state/ollama
-#   ../../../logs/ollama   →  /mnt/disc-a00/Z01-DEVOPS/logs/ollama
+#   ../../state/ollama  →  /mnt/disc-a00/Z01-DEVOPS/state/ollama
+#   ../../logs/ollama   →  /mnt/disc-a00/Z01-DEVOPS/logs/ollama
 #
 # Modelos GGUF montados desde Blackpearl: /mnt/blackpearl/lmstudio_models/
 #
@@ -22,13 +22,13 @@ services:
       - OLLAMA_HOST=0.0.0.0
     volumes:
       # Datos persistentes (blobs, manifiestos de modelos)
-      - ../../../state/ollama:/root/.ollama
+      - ../../state/ollama:/root/.ollama
       # Modelos GGUF desde Blackpearl (read-only)
       - /mnt/blackpearl/lmstudio_models:/models:ro
       # Modelfiles para importar GGUF locales
       - ./Modelfiles:/Modelfiles
       # Logs
-      - ../../../logs/ollama:/root/logs
+      - ../../logs/ollama:/root/logs
     deploy:
       resources:
         reservations:
