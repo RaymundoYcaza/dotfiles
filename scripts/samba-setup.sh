@@ -20,7 +20,8 @@ set -euo pipefail
 # ─── Configuración ───────────────────────────────────────────────────────────
 
 SMB_USER="inorizonti"
-SMB_PASS="Dominito@2020"
+# SMB_PASS se obtiene de variable de entorno SAMBA_PASSWORD
+# Si no está definida, el script pedirá el password interactivamente
 
 declare -a REQUIRED_PACKAGES=("samba")
 
@@ -80,9 +81,15 @@ create_user() {
 
     # Configurar password Samba
     log_info "Configurando password Samba para ${SMB_USER}..."
-    echo -e "${SMB_PASS}\n${SMB_PASS}" | smbpasswd -a -s "${SMB_USER}" 2>/dev/null || {
-        echo -e "${SMB_PASS}\n${SMB_PASS}" | smbpasswd -s "${SMB_USER}" 2>/dev/null || true
-    }
+    if [ -z "${SAMBA_PASSWORD:-}" ]; then
+        log_warn "SAMBA_PASSWORD no definida. Configurá manualmente despues:"
+        log_info "  sudo smbpasswd ${SMB_USER}"
+    else
+        echo -e "${SAMBA_PASSWORD}
+${SAMBA_PASSWORD}" | smbpasswd -a -s "${SMB_USER}" 2>/dev/null || echo -e "${SAMBA_PASSWORD}
+${SAMBA_PASSWORD}" | smbpasswd -s "${SMB_USER}" 2>/dev/null || true
+        log_ok "Password Samba configurado para ${SMB_USER}."
+    fi
     log_ok "Password Samba configurado para ${SMB_USER}."
 }
 

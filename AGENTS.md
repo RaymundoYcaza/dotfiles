@@ -135,6 +135,9 @@ cd ~/.dotfiles && git add -A && git commit -m "update: $(date +%Y-%m-%d)" && git
 # Configurar Samba (compartir disco con Windows)
 sudo ~/.dotfiles/scripts/samba-setup.sh
 
+# Reiniciar servicios Samba
+sudo ~/.dotfiles/scripts/samba-setup.sh --restart
+
 # Ver estado de Samba
 ~/.dotfiles/scripts/samba-setup.sh --status
 
@@ -224,10 +227,11 @@ make push
 1. **Consultar documentación local primero:** Antes de buscar en internet o preguntar, leer `AGENTS.md`, `README.md`, y los archivos en `packages/` y `scripts/`. Toda la arquitectura y procedimientos están documentados localmente.
 2. **NO ejecutar scripts interactivos** con `read -r -p` sin el flag `--auto`. El usuario no puede escribir en la interfaz de freebuff.
 3. **NO instalar paquetes globalmente** sin confirmación. Usar `sudo pacman -S` o AUR helper solo cuando el usuario lo autorice.
-4. **NO mezclar dominios:** no poner configs de Gentleman.Dots en Stow ni viceversa.
-5. **Siempre verificar el estado actual** antes de hacer cambios: `git status`, `stow --no`, `fc-list`, etc.
-6. **Symlinks de Stow:** No editar archivos directamente en `~/.config/` si son symlinks. Editar el target en `~/.dotfiles/stow_packages/` y re-stow.
-7. **Escritura en disco externo:** El disco NTFS montado en `/mnt/disc-a00` puede requerir permisos (`chmod o+w`) o `sudo` para escribir. Verificar antes.
+4. **🔴 REGLA MANDATORIA — NO ejecutar comandos que requieran password:** Cualquier comando que requiera `sudo` y vaya a solicitar password por terminal DEBE ser delegado al usuario. Mostrar el comando exacto para que el usuario lo copie y ejecute manualmente. No usar `sudo` en comandos automatizados (basher, scripts, etc.) a menos que sea 100% seguro que no pedirá password (ej: NOPASSWD en sudoers). Si hay duda, delegar al usuario.
+5. **NO mezclar dominios:** no poner configs de Gentleman.Dots en Stow ni viceversa.
+6. **Siempre verificar el estado actual** antes de hacer cambios: `git status`, `stow --no`, `fc-list`, etc.
+7. **Symlinks de Stow:** No editar archivos directamente en `~/.config/` si son symlinks. Editar el target en `~/.dotfiles/stow_packages/` y re-stow.
+8. **Escritura en disco externo:** El disco NTFS montado en `/mnt/disc-a00` puede requerir permisos (`chmod o+w`) o `sudo` para escribir. Verificar antes.
 
 ### 1.7 Stack Tecnológico
 
@@ -622,15 +626,23 @@ sudo ~/.dotfiles/scripts/samba-setup.sh
 # Cambiar password
 sudo ~/.dotfiles/scripts/samba-setup.sh --password
 
+# Reiniciar servicios Samba
+sudo ~/.dotfiles/scripts/samba-setup.sh --restart
+
 # Desde Windows conectar a:
 # \\192.168.100.81\disc-a00
 # Usuario: inorizonti
 ```
 
+**Requisitos de red:**
+- Puerto **139/tcp** (NetBIOS) y **445/tcp** (SMB) deben estar abiertos en UFW
+- El servicio `nmb.service` debe estar activo para resolución de nombres NetBIOS
+- `server signing = auto` (configurado en el template) para compatibilidad con Windows
+
 **Convención:**
 - El template de Samba se versiona en Git
 - Durante restauración, `restore.sh` pregunta si se desea configurar Samba
-- El backup de `/etc/` (`backup.sh --full`) respalda la config activa
+- El backup de `/etc/` (`backup.sh --full`) respalda la config activa en `/etc/samba/smb.conf`
 
 ### 2.13 Gestión de Ollama (IA Local)
 

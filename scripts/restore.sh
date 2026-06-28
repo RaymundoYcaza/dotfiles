@@ -412,6 +412,7 @@ main() {
         echo "  4. Restaurar /etc desde backup externo"
         echo "  5. Configurar IP estática"
         echo "  6. Configurar Samba (compartir disco con Windows)"
+        echo "      → Password: sudo smbpasswd inorizonti"
         echo "  7. Configurar Ollama (IA local - Docker)"
         echo "  8. Instalar Dokploy (PaaS - gestión de contenedores)"
         echo "  9. Restaurar hooks personalizados de Omarchy"
