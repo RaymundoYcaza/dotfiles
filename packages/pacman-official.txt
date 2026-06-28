@@ -144,6 +144,7 @@ fftw
 file
 filesystem
 findutils
+fish
 flac
 flex
 fmt
@@ -857,6 +858,7 @@ ruby
 rubygems
 runc
 rust
+samba
 satty
 sbc
 sdbus-cpp
@@ -934,6 +936,7 @@ tree-sitter-vim
 tree-sitter-vimdoc
 tslib
 ttf-ia-writer
+ttf-iosevkaterm-nerd
 ttf-jetbrains-mono-nerd
 ttf-liberation
 twolame
@@ -971,6 +974,7 @@ wayland-protocols
 webkit2gtk-4.1
 webp-pixbuf-loader
 webrtc-audio-processing-1
+wget
 which
 whois
 wireless-regdb
