@@ -155,6 +155,30 @@ sudo ~/.dotfiles/scripts/ollama-setup.sh
 cd /mnt/disc-a00/Z01-DEVOPS/containers/ollama
 docker compose exec ollama ollama create <name> -f /Modelfiles/<modelfile>
 
+# === Ollama Cloud (autenticación) ===
+# Autenticar con ollama.com para usar modelos cloud
+# (ej: gemma4:31b-cloud, llama4:70b-cloud, etc.)
+docker exec -it ollama ollama signin
+# → Abrir https://ollama.com/device en el navegador
+# → Ingresar el código de verificación
+
+# Cerrar sesión de ollama.com
+docker exec ollama ollama signout
+
+# Verificar si está autenticado
+docker exec ollama ollama list
+# Los modelos cloud aparecen si hay sesión activa
+
+# Usar API key directamente (alternativa programática)
+# 1. Generar key en https://ollama.com/settings
+# 2. Usar en requests:
+#    curl https://ollama.com/api/chat \
+#      -H "Authorization: Bearer <api-key>" \
+#      -d '{"model": "gemma4:31b-cloud", "messages": [...]}'
+
+# Probar modelo cloud después de autenticar
+docker exec ollama ollama run gemma4:31b-cloud "Hola"
+
 # Verificar IP estática del servidor
 sudo ~/.dotfiles/scripts/network-setup.sh
 
@@ -173,12 +197,13 @@ make push
 
 ### 1.6 Restricciones para Agentes
 
-1. **NO ejecutar scripts interactivos** con `read -r -p` sin el flag `--auto`. El usuario no puede escribir en la interfaz de freebuff.
-2. **NO instalar paquetes globalmente** sin confirmación. Usar `sudo pacman -S` o AUR helper solo cuando el usuario lo autorice.
-3. **NO mezclar dominios:** no poner configs de Gentleman.Dots en Stow ni viceversa.
-4. **Siempre verificar el estado actual** antes de hacer cambios: `git status`, `stow --no`, `fc-list`, etc.
-5. **Symlinks de Stow:** No editar archivos directamente en `~/.config/` si son symlinks. Editar el target en `~/.dotfiles/stow_packages/` y re-stow.
-6. **Escritura en disco externo:** El disco NTFS montado en `/mnt/disc-a00` puede requerir permisos (`chmod o+w`) o `sudo` para escribir. Verificar antes.
+1. **Consultar documentación local primero:** Antes de buscar en internet o preguntar, leer `AGENTS.md`, `README.md`, y los archivos en `packages/` y `scripts/`. Toda la arquitectura y procedimientos están documentados localmente.
+2. **NO ejecutar scripts interactivos** con `read -r -p` sin el flag `--auto`. El usuario no puede escribir en la interfaz de freebuff.
+3. **NO instalar paquetes globalmente** sin confirmación. Usar `sudo pacman -S` o AUR helper solo cuando el usuario lo autorice.
+4. **NO mezclar dominios:** no poner configs de Gentleman.Dots en Stow ni viceversa.
+5. **Siempre verificar el estado actual** antes de hacer cambios: `git status`, `stow --no`, `fc-list`, etc.
+6. **Symlinks de Stow:** No editar archivos directamente en `~/.config/` si son symlinks. Editar el target en `~/.dotfiles/stow_packages/` y re-stow.
+7. **Escritura en disco externo:** El disco NTFS montado en `/mnt/disc-a00` puede requerir permisos (`chmod o+w`) o `sudo` para escribir. Verificar antes.
 
 ### 1.7 Stack Tecnológico
 
@@ -715,6 +740,73 @@ curl http://192.168.100.81:11434/api/embed \
     "input": "El cielo es azul"
   }'
 ```
+
+**Autenticación con Ollama Cloud (modelos cloud):**
+
+Ollama permite usar modelos que se ejecutan en los servidores de ollama.com
+(como `gemma4:31b-cloud`, `llama4:70b-cloud`, etc.). Estos modelos requieren
+autenticación con una cuenta de [ollama.com](https://ollama.com).
+
+**Método 1 — Signin interactivo (recomendado para CLI/uso diario):**
+
+```bash
+# Iniciar sesión (una sola vez, persiste en state/ollama)
+docker exec -it ollama ollama signin
+# → Te da una URL (https://ollama.com/device) y un código
+# → Abrís la URL en cualquier navegador, ingresás el código
+# → Listo, el contenedor queda autenticado permanentemente
+```
+
+**Método 2 — API Key (para apps/scripts/programático):**
+
+```bash
+# 1. Generar API key en: https://ollama.com/settings
+# 2. Usar la key contra la API pública de ollama.com:
+
+curl https://ollama.com/api/chat \
+  -H "Authorization: Bearer tu-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gemma4:31b-cloud",
+    "messages": [{"role": "user", "content": "Hola"}],
+    "stream": false
+  }'
+```
+
+**Cambiar de usuario / cerrar sesión:**
+
+```bash
+# Cerrar sesión actual
+docker exec ollama ollama signout
+
+# Iniciar sesión con otro usuario
+docker exec -it ollama ollama signin
+```
+
+**Probar modelo cloud después de autenticar:**
+
+```bash
+# Desde el contenedor (CLI)
+docker exec ollama ollama run gemma4:31b-cloud "Hola, ¿qué puedes hacer?"
+
+# Desde la API local (Ollama redirige al cloud automáticamente)
+curl http://192.168.100.81:11434/api/generate -d '{
+  "model": "gemma4:31b-cloud",
+  "prompt": "Hola",
+  "stream": false
+}'
+```
+
+**¿Qué modelos cloud hay disponibles?**
+
+Los modelos cloud se listan en [ollama.com/search](https://ollama.com/search)
+con el tag `-cloud`. Ejemplos populares:
+- `gemma4:31b-cloud` — Google Gemma 4 (31B params)
+- `llama4:70b-cloud` — Meta Llama 4 (70B params)
+- Otros modelos grandes que no caben localmente
+
+**Nota:** Los modelos cloud cuentan con un free-tier limitado. Consultar
+[ollama.com/pricing](https://ollama.com/pricing) para detalles.
 
 **Backup de modelos (blobs de Ollama):**
 

@@ -101,6 +101,50 @@ done
 
 ---
 
+## ☁️ Modelos Cloud (ollama.com)
+
+Además de modelos GGUF locales, Ollama puede usar **modelos cloud** que se
+ejecutan en los servidores de ollama.com (ej: `gemma4:31b-cloud`,
+`llama4:70b-cloud`). Útiles cuando un modelo no cabe en tu VRAM o querés
+probar modelos grandes sin descargarlos.
+
+### Autenticación
+
+```bash
+# 1. Iniciar sesión (interactivo, una sola vez)
+docker exec -it ollama ollama signin
+# → Abrir https://ollama.com/device en el navegador
+# → Ingresar el código de verificación
+
+# 2. Verificar que está autenticado
+docker exec ollama ollama list
+
+# 3. Probar un modelo cloud
+docker exec ollama ollama run gemma4:31b-cloud "Hola"
+
+# 4. Cerrar sesión (para cambiar de usuario)
+docker exec ollama ollama signout
+```
+
+La sesión persiste aunque el contenedor se reinicie (se guarda en
+`state/ollama/`).
+
+### API Key (alternativa programática)
+
+```bash
+# Generar key en https://ollama.com/settings
+curl https://ollama.com/api/chat \
+  -H "Authorization: Bearer <api-key>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gemma4:31b-cloud",
+    "messages": [{"role": "user", "content": "Hola"}],
+    "stream": false
+  }'
+```
+
+---
+
 ## 🧪 API OpenAI compatible
 
 Endpoint: `http://192.168.100.81:11434/v1`
