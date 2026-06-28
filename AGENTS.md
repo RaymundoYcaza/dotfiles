@@ -179,6 +179,30 @@ docker exec ollama ollama list
 # Probar modelo cloud después de autenticar
 docker exec ollama ollama run gemma4:31b-cloud "Hola"
 
+# === Goose (AI Coding Agent) ===
+# Instalar Goose CLI
+curl -fsSL https://github.com/aaif-goose/goose/releases/download/stable/download_cli.sh | bash
+
+# Configurar Goose interactivamente
+goose configure
+# → Seleccionar Ollama como provider
+# → Host: http://192.168.100.81:11434
+# → Model: gemma4:31b-cloud
+
+# Config manual (alternativa): editar ~/.config/goose/config.yaml
+# GOOSE_PROVIDER: ollama
+# OLLAMA_HOST: http://192.168.100.81:11434
+# GOOSE_MODEL: gemma4:31b-cloud
+
+# Ejecutar Goose (modo interactivo)
+goose
+
+# Comando directo con Goose
+goose run "Hola, ¿qué modelos cloud de Ollama conoces?"
+
+# Iniciar Goose Desktop (GUI)
+goose-desktop
+
 # Verificar IP estática del servidor
 sudo ~/.dotfiles/scripts/network-setup.sh
 
@@ -228,6 +252,7 @@ make push
 | Disco externo | NTFS, montado en `/mnt/disc-a00` |
 | Contenedores | Docker / Dokploy |
 | IA Local | Ollama (Docker) en `/mnt/disc-a00/Z01-DEVOPS/containers/ollama/` |
+| Agente AI (coding) | Goose CLI + Goose Desktop |
 
 ---
 
@@ -843,7 +868,112 @@ for mf in ~/.dotfiles/packages/ollama/Modelfiles/*; do
 done
 ```
 
-### 2.14 Glosario
+### 2.14 Goose (Agente AI de Código)
+
+**Goose** es un agente AI open-source para desarrollo de software (original de
+Block/Square, ahora mantenido por la Agentic AI Foundation). Se integra con
+Ollama como provider, permitiendo usar tanto modelos locales como cloud.
+
+**Ubicación de archivos:**
+
+| Componente | Ubicación |
+|-----------|-----------|
+| CLI binary | `~/.local/bin/goose` (instalado vía script oficial) |
+| Desktop binary | `~/.local/bin/goose-desktop` (script wrapper) |
+| Desktop app | `~/.local/share/goose-desktop/Goose` (Electron, ~206MB) |
+| Config | `~/.config/goose/config.yaml` |
+| Desktop entry | `~/.local/share/applications/goose.desktop` |
+| Icono | `/usr/share/pixmaps/goose.png` |
+
+**Instalación:**
+
+```bash
+# === Goose CLI (recomendado, liviano y rápido) ===
+curl -fsSL https://github.com/aaif-goose/goose/releases/download/stable/download_cli.sh | bash
+
+# === Goose Desktop (interfaz gráfica, opcional) ===
+# Requiere descargar el .deb de GitHub Releases y extraerlo manualmente:
+# 1. Ir a https://github.com/aaif-goose/goose/releases/latest
+# 2. Descargar goose_X.Y.Z_amd64.deb
+# 3. Extraer y copiar:
+cd /tmp
+ar x goose_*.deb
+tar -xf data.tar.zst
+mkdir -p ~/.local/share/goose-desktop
+cp -r usr/lib/goose/* ~/.local/share/goose-desktop/
+cp usr/share/pixmaps/goose.png ~/.local/share/icons/hicolor/512x512/apps/
+mkdir -p ~/.local/share/applications/
+cp usr/share/applications/goose.desktop ~/.local/share/applications/
+sed -i "s|/usr/lib/goose|$HOME/.local/share/goose-desktop|g" ~/.local/share/applications/goose.desktop
+
+# Crear wrapper ejecutable:
+cat > ~/.local/bin/goose-desktop << 'WRAPPER'
+#!/bin/bash
+cd "$HOME/.local/share/goose-desktop"
+exec ./Goose "$@"
+WRAPPER
+chmod +x ~/.local/bin/goose-desktop
+```
+
+**Nota:** El AUR (`goose-desktop-bin`) puede fallar si `yay` no tiene sesión sudo
+activa. La extracción manual del .deb es más confiable.
+
+**Configuración con Ollama:**
+
+Goose puede usar tanto Ollama local (modelos GGUF con GPU local) como Ollama
+Cloud (modelos cloud tipo `gemma4:31b-cloud`).
+
+Opción A — **Ollama local** (ya autenticado via `ollama signin`):
+
+```yaml
+# ~/.config/goose/config.yaml
+GOOSE_PROVIDER: ollama
+OLLAMA_HOST: http://192.168.100.81:11434
+GOOSE_MODEL: gemma4:31b-cloud
+```
+
+Opción B — **Ollama Cloud directo** (via API key):
+
+```yaml
+# ~/.config/goose/config.yaml
+GOOSE_PROVIDER: ollama
+OLLAMA_HOST: https://ollama.com
+OLLAMA_CLOUD_API_KEY: "tu-api-key-aqui"
+GOOSE_MODEL: gemma4:31b-cloud
+```
+
+**Uso diario:**
+
+```bash
+# Modo interactivo (CLI)
+goose
+
+# Comando directo
+goose run "Explica cómo funciona el patrón Observer en Python"
+
+# Goose Desktop (GUI)
+goose-desktop
+```
+
+**Relación con Ollama:**
+
+```
+┌──────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│  Goose CLI    │────▶│  Ollama (Docker)  │────▶│ Modelos locales  │
+│  Goose Desktop│     │  192.168.100.81   │     │ (GGUF, GPU)     │
+└──────────────┘     │  :11434           │     ├─────────────────┤
+                      │                   │     │ Modelos Cloud    │
+                      │                   │     │ (ollama.com)     │
+                      └──────────────────┘     └─────────────────┘
+```
+
+Goose habla con Ollama via API compatible OpenAI (`/v1/chat/completions`).
+Ollama decide si el modelo corre local (GGUF importados) o en cloud
+(modelos `*-cloud` que requieren signin).
+
+---
+
+### 2.15 Glosario
 
 | Término | Significado |
 |---------|------------|

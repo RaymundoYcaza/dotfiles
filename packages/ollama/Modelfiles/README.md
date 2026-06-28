@@ -145,6 +145,58 @@ curl https://ollama.com/api/chat \
 
 ---
 
+## 🦆 Goose — Configuración con Ollama
+
+**Goose** es un agente AI de código abierto que puede usar Ollama como
+provider, tanto para modelos locales GGUF como para modelos cloud.
+
+### Configurar Goose para Ollama local (ya autenticado)
+
+```bash
+# Configuración interactiva
+goose configure
+# → Seleccionar Ollama como provider
+# → Host: http://192.168.100.81:11434
+# → Model: gemma4:31b-cloud (o cualquier modelo local/cloud)
+
+# O editar ~/.config/goose/config.yaml directamente:
+# GOOSE_PROVIDER: ollama
+# OLLAMA_HOST: http://192.168.100.81:11434
+# GOOSE_MODEL: gemma4:31b-cloud
+```
+
+### Configurar Goose para Ollama Cloud directo
+
+Si preferís que Goose hable directo con ollama.com (sin pasar por tu
+servidor local), usá la API key:
+
+```yaml
+# ~/.config/goose/config.yaml
+GOOSE_PROVIDER: ollama
+OLLAMA_HOST: https://ollama.com
+OLLAMA_CLOUD_API_KEY: "tu-api-key"
+GOOSE_MODEL: gemma4:31b-cloud
+```
+
+### Uso diario
+
+```bash
+# CLI interactivo
+goose
+
+# Comando directo
+goose run "Genera una función que invierta una lista enlazada en Python"
+
+# Desktop (GUI)
+goose-desktop
+```
+
+Goose consulta a Ollama via API OpenAI-compatible (`/v1/chat/completions`).
+Ollama decide si el modelo corre local (GGUF en GPU) o en cloud
+(modelos `*-cloud` autenticados).
+
+---
+
 ## 🧪 API OpenAI compatible
 
 Endpoint: `http://192.168.100.81:11434/v1`
