@@ -172,6 +172,7 @@ make push
 | IP estática | `192.168.100.81` (template en `packages/network/`) |
 | Samba (compartir disco) | `packages/samba/smb.conf` → `/etc/samba/smb.conf` |
 | Backup externo | Disco NTFS en `/mnt/disc-a00` |
+| Backup automático | Hook Omarchy `post-update.d/99-backup-dotfiles` |
 | Versionado | Git → GitHub |
 | Shell scripts | Bash |
 | Disco externo | NTFS, montado en `/mnt/disc-a00` |
@@ -202,6 +203,8 @@ make push
 │   │   │   └── 20-ethernet.network
 │   │   └── samba/                   ← Template de Samba
 │   │       └── smb.conf
+│   │   └── omarchy-hooks/           ← Hooks de Omarchy versionados
+│   │       └── 99-backup-dotfiles
 │   ├── scripts/                     ← Scripts automatizados
 │   │   ├── backup.sh
 │   │   ├── restore.sh
@@ -473,7 +476,22 @@ make samba          # configurar Samba
 make samba-status   # mostrar estado de Samba
 ```
 
-### 2.10 Notas Técnicas
+### 2.10 Hooks Automáticos de Omarchy
+
+**Hook post-update: `99-backup-dotfiles`**
+
+Se ejecuta automáticamente después de cada `omarchy update`:
+1. Regenera las listas de paquetes (`backup.sh --packages-only`)
+2. Hace commit local de los cambios
+
+**Ubicación activa:** `~/.config/omarchy/hooks/post-update.d/99-backup-dotfiles`
+**Ubicación versionada:** `~/.dotfiles/packages/omarchy-hooks/99-backup-dotfiles`
+
+Para desactivar: `mv ~/.config/omarchy/hooks/post-update.d/99-backup-dotfiles{,.disabled}`
+
+Durante restauración, `restore.sh` copia este hook desde el repo a la ubicación activa.
+
+### 2.11 Notas Técnicas
 
 - **Starship:** El archivo `~/.config/starship.toml` fue corregido para ser symlink de Stow (no lo gestiona Gentleman.Dots).
 - **Rama Git:** `main` (local y remoto). Rama `master` eliminada.

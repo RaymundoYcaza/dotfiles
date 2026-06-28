@@ -1,0 +1,21 @@
+#!/bin/bash
+# 99-backup-dotfiles — Backup automático post-update
+# ===================================================
+# Este hook se ejecuta después de cada 'omarchy update'.
+# Actualiza las listas de paquetes y hace un backup rápido.
+#
+# Para desactivar: renombrar a 99-backup-dotfiles.disabled
+
+# Solo si existe el repo de dotfiles
+if [ -d "${HOME}/.dotfiles" ] && [ -x "${HOME}/.dotfiles/scripts/backup.sh" ]; then
+    # Backup rápido: solo regenerar listas de paquetes
+    "${HOME}/.dotfiles/scripts/backup.sh" --packages-only 2>/dev/null
+    
+    # Commit local del cambio
+    cd "${HOME}/.dotfiles" 2>/dev/null && {
+        if ! git diff --quiet || ! git diff --cached --quiet || [[ -n $(git status --porcelain) ]]; then
+            git add -A 2>/dev/null
+            git commit -m "chore: auto-update packages post omarchy update" 2>/dev/null || true
+        fi
+    }
+fi

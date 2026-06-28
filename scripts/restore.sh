@@ -162,6 +162,25 @@ restore_etc_backup() {
     fi
 }
 
+restore_omarchy_hooks() {
+    log_info "=== Hooks de Omarchy ==="
+
+    local hook_src="${DOTFILES_DIR}/packages/omarchy-hooks"
+    local hook_dst="${HOME}/.config/omarchy/hooks/post-update.d/"
+
+    if [ ! -d "${hook_src}" ]; then
+        log_info "No hay hooks personalizados para restaurar."
+        return
+    fi
+
+    if [ -d "${hook_dst}" ]; then
+        log_info "Copiando hooks personalizados a ${hook_dst}"
+        cp -r "${hook_src}"/* "${hook_dst}/" 2>/dev/null
+        chmod +x "${hook_dst}"/*.sh "${hook_dst}"/* 2>/dev/null || true
+        log_ok "Hooks restaurados."
+    fi
+}
+
 restore_network_config() {
     log_info "=== Configuración de red estática ==="
 
@@ -283,8 +302,9 @@ main() {
         echo "  4. Restaurar /etc desde backup externo"
         echo "  5. Configurar IP estática"
         echo "  6. Configurar Samba (compartir disco con Windows)"
-        echo "  7. Instalar Gentleman.Dots (opcional)"
-        echo "  8. Reaplicar tema Omarchy"
+        echo "  7. Restaurar hooks personalizados de Omarchy"
+        echo "  8. Instalar Gentleman.Dots (opcional)"
+        echo "  9. Reaplicar tema Omarchy"
         exit 0
     fi
 
@@ -294,6 +314,7 @@ main() {
     restore_etc_backup
     restore_network_config
     restore_samba
+    restore_omarchy_hooks
     install_gentleman_dots
     restore_omarchy_theme
     final_instructions
