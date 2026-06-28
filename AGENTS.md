@@ -38,6 +38,7 @@ Este es un sistema **Omarchy** (distro Arch Linux preconfigurada con Hyprland, W
 | **fastfetch** | **Stow** | ✅ `stow_packages/fastfetch/` | Git + disco |
 | **git** | **Stow** | ✅ `stow_packages/git/` | Git + disco |
 | **lazygit** | **Stow** | ✅ `stow_packages/lazygit/` | Git + disco |
+| Samba | Template | ✅ `packages/samba/smb.conf` | Git + script |
 | **starship** | **Stow** | ✅ `stow_packages/starship/` | Git + disco |
 | **Red estática** | **Template** | ✅ `packages/network/` (template) | Git + script |
 | Alacritty | Gentleman.Dots | ❌ No versionar | Backup pre-instalación |
@@ -72,6 +73,13 @@ Este es un sistema **Omarchy** (distro Arch Linux preconfigurada con Hyprland, W
 │       → Mover/copiar archivos ahí
 │       → Stow --restow
 │       → Agregar a STOW_PACKAGES en bootstrap.sh
+│
+├── ¿Es config de Samba (compartir disco con Windows)?
+│   └── → Editar template en packages/samba/smb.conf
+│       → Ejecutar: sudo ~/.dotfiles/scripts/samba-setup.sh
+│       → Para cambiar password: sudo ~/.dotfiles/scripts/samba-setup.sh --password
+│       → Para ver estado: ~/.dotfiles/scripts/samba-setup.sh --status
+│       → Committear cambios a Git
 │
 ├── ¿Es config de red estática (IP fija)?
 │   └── → Editar STATIC_IP en scripts/network-setup.sh
@@ -113,7 +121,16 @@ cd ~/.dotfiles && git status
 # Commit y push rápido
 cd ~/.dotfiles && git add -A && git commit -m "update: $(date +%Y-%m-%d)" && git push
 
-# Configurar IP estática del servidor
+# Configurar Samba (compartir disco con Windows)
+sudo ~/.dotfiles/scripts/samba-setup.sh
+
+# Ver estado de Samba
+~/.dotfiles/scripts/samba-setup.sh --status
+
+# Cambiar password de Samba
+sudo ~/.dotfiles/scripts/samba-setup.sh --password
+
+# Verificar IP estática del servidor
 sudo ~/.dotfiles/scripts/network-setup.sh
 
 # Con IP personalizada (sin modificar el script)
@@ -153,6 +170,8 @@ make push
 | Gestor dotfiles | GNU Stow |
 | Gestor de red | systemd-networkd + systemd-resolved |
 | IP estática | `192.168.100.81` (template en `packages/network/`) |
+| Samba (compartir disco) | `packages/samba/smb.conf` → `/etc/samba/smb.conf` |
+| Backup externo | Disco NTFS en `/mnt/disc-a00` |
 | Versionado | Git → GitHub |
 | Shell scripts | Bash |
 | Disco externo | NTFS, montado en `/mnt/disc-a00` |
@@ -179,13 +198,16 @@ make push
 │   │   ├── pacman-official.txt
 │   │   ├── pacman-aur.txt
 │   │   ├── flatpak.txt
-│   │   └── network/                 ← Template de red estática
-│   │       └── 20-ethernet.network
+│   │   ├── network/                 ← Template de red estática
+│   │   │   └── 20-ethernet.network
+│   │   └── samba/                   ← Template de Samba
+│   │       └── smb.conf
 │   ├── scripts/                     ← Scripts automatizados
 │   │   ├── backup.sh
 │   │   ├── restore.sh
 │   │   ├── bootstrap.sh
-│   │   └── network-setup.sh         ← Configuración IP estática
+│   │   ├── network-setup.sh         ← Configuración IP estática
+│   │   └── samba-setup.sh           ← Configuración Samba
 │   └── .gitignore
 │
 ├── .config/                         ← CONFIGURACIONES ACTIVAS
@@ -425,6 +447,14 @@ UUID=70FEE01EFEDFDB04	/mnt/disc-a00	ntfs3	rw,noatime,uid=1000,gid=1000,iocharset
 - `--dhcp` vuelve a DHCP temporalmente
 - Requiere `sudo` (escribe en `/etc/systemd/network/`)
 
+**samba-setup.sh — Compartir disco con Windows:**
+- Instala Samba, crea usuario, aplica configuración
+- Comparte `/mnt/disc-a00` como `disc-a00`
+- `--status` muestra estado del servicio
+- `--password` cambia password del usuario Samba
+- `--restart` reinicia el servicio
+- Requiere `sudo`
+
 ### 2.9 Makefile — Shortcuts
 
 ```makefile
@@ -439,6 +469,8 @@ make restore        # restauración interactiva
 make restore-auto   # restauración automática
 make network        # configurar IP estática
 make network-status # mostrar estado de red
+make samba          # configurar Samba
+make samba-status   # mostrar estado de Samba
 ```
 
 ### 2.10 Notas Técnicas
@@ -449,7 +481,38 @@ make network-status # mostrar estado de red
 - **Contenedores (futuro):** Dokploy + Docker volumes en disco externo.
 - **Omarchy hooks:** Se puede agregar hook `post-update.d/99-backup-dotfiles` para backup automático.
 
-### 2.11 Glosario
+### 2.11 Configuración Samba
+
+**Share:** `\\192.168.100.81\disc-a00`
+**Usuario:** `inorizonti`
+**Password:** `Dominito@2020`
+
+**Archivos involucrados:**
+- `packages/samba/smb.conf` — Template versionado en Git
+- `scripts/samba-setup.sh` — Script que aplica la configuración
+
+**Comandos útiles:**
+```bash
+# Setup completo
+sudo ~/.dotfiles/scripts/samba-setup.sh
+
+# Ver estado
+~/.dotfiles/scripts/samba-setup.sh --status
+
+# Cambiar password
+sudo ~/.dotfiles/scripts/samba-setup.sh --password
+
+# Desde Windows conectar a:
+# \\192.168.100.81\disc-a00
+# Usuario: inorizonti
+```
+
+**Convención:**
+- El template de Samba se versiona en Git
+- Durante restauración, `restore.sh` pregunta si se desea configurar Samba
+- El backup de `/etc/` (`backup.sh --full`) respalda la config activa
+
+### 2.12 Glosario
 
 | Término | Significado |
 |---------|------------|

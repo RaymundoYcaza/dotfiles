@@ -185,8 +185,27 @@ restore_network_config() {
     fi
 }
 
+restore_samba() {
+    log_info "=== Samba (compartir disco con Windows) ==="
+
+    if [ ! -f "${DOTFILES_DIR}/scripts/samba-setup.sh" ]; then
+        log_warn "No se encontró scripts/samba-setup.sh. Omitiendo Samba."
+        return
+    fi
+
+    if confirm "¿Configurar Samba para compartir /mnt/disc-a00 con Windows?"; then
+        log_info "Ejecutando samba-setup.sh (requiere sudo)..."
+        if sudo bash "${DOTFILES_DIR}/scripts/samba-setup.sh"; then
+            log_ok "Samba configurado."
+        else
+            log_warn "Error al configurar Samba. Para hacerlo manual:"
+            log_info "  sudo ~/.dotfiles/scripts/samba-setup.sh"
+        fi
+    fi
+}
+
 install_gentleman_dots() {
-    log_info "=== Gentleman.Dots ==="
+    log_info "=== Gentleman.Dots ===
 
     if confirm "¿Instalar Gentleman.Dots? (configura Alacritty, Neovim, Fish/Zsh, Starship, Tmux)"; then
         log_info "Descargando e instalando Gentleman.Dots..."
@@ -263,8 +282,9 @@ main() {
         echo "  3. Restaurar dotfiles vía Stow"
         echo "  4. Restaurar /etc desde backup externo"
         echo "  5. Configurar IP estática"
-        echo "  6. Instalar Gentleman.Dots (opcional)"
-        echo "  7. Reaplicar tema Omarchy"
+        echo "  6. Configurar Samba (compartir disco con Windows)"
+        echo "  7. Instalar Gentleman.Dots (opcional)"
+        echo "  8. Reaplicar tema Omarchy"
         exit 0
     fi
 
@@ -273,6 +293,7 @@ main() {
     restore_dotfiles_stow
     restore_etc_backup
     restore_network_config
+    restore_samba
     install_gentleman_dots
     restore_omarchy_theme
     final_instructions
