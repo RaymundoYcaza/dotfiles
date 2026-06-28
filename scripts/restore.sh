@@ -205,7 +205,7 @@ restore_samba() {
 }
 
 install_gentleman_dots() {
-    log_info "=== Gentleman.Dots ===
+    log_info "=== Gentleman.Dots ==="
 
     if confirm "¿Instalar Gentleman.Dots? (configura Alacritty, Neovim, Fish/Zsh, Starship, Tmux)"; then
         log_info "Descargando e instalando Gentleman.Dots..."
