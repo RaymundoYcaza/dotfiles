@@ -271,15 +271,18 @@ test_api() {
 # ─── Main ────────────────────────────────────────────────────────────────────
 
 main() {
+    AUTO_MODE="false"
+    DRY_RUN="false"
+
+    # Parse flags primero (antes del case)
+    for arg in "$@"; do
+        case "$arg" in
+            --auto) AUTO_MODE="true" ;;
+            --dry-run) DRY_RUN="true" ;;
+        esac
+    done
+
     case "${1:-}" in
-        --auto)
-            AUTO_MODE="true"
-            # Fall through to install
-            ;&  # bash 4+ fall-through
-        --dry-run)
-            DRY_RUN="true"
-            # Fall through to install
-            ;&
         --status)
             show_status
             ;;
@@ -295,13 +298,13 @@ main() {
             echo "Opciones:"
             echo "  Sin argumentos    Instalación completa (prereq + install + post)"
             echo "  --auto            Modo automático (sin confirmaciones)"
-            echo "  --dry-run         Vista previa"
+            echo "  --dry-run         Vista previa (solo muestra qué se haría)"
             echo "  --status          Mostrar estado"
             echo "  --post-install    Solo pasos post-instalación"
             echo "  --test            Probar API"
             echo "  --help            Esta ayuda"
             ;;
-        "")
+        --auto|--dry-run|"")
             log_info "=== Instalación de Ollama ==="
             echo ""
 
