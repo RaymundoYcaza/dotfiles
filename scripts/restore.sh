@@ -173,10 +173,15 @@ restore_omarchy_hooks() {
         return
     fi
 
-    if [ -d "${hook_dst}" ]; then
+    if [ ! -d "${hook_dst}" ]; then
+        log_info "No existe el directorio de hooks de Omarchy. Omitiendo..."
+        return
+    fi
+
+    if confirm "¿Restaurar hooks personalizados de Omarchy?"; then
         log_info "Copiando hooks personalizados a ${hook_dst}"
         cp -r "${hook_src}"/* "${hook_dst}/" 2>/dev/null
-        chmod +x "${hook_dst}"/*.sh "${hook_dst}"/* 2>/dev/null || true
+        chmod +x "${hook_dst}"/* 2>/dev/null || true
         log_ok "Hooks restaurados."
     fi
 }
